@@ -1,0 +1,44 @@
+[Unit]
+Description=Alfred Gateway - Multi-Platform Messaging
+Documentation=https://github.com/your-repo/alfred
+After=network.target
+Wants=network-online.target
+
+# Don't conflict with Clawdbot
+Conflicts=
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/opt/alfred/gateway
+Environment="PATH=/opt/alfred/venv/bin:/usr/local/bin:/usr/bin:/bin"
+Environment="PYTHONUNBUFFERED=1"
+
+ExecStart=/opt/alfred/venv/bin/python gateway.py config.yaml
+
+# Reliability - auto restart on failure
+Restart=always
+RestartSec=5
+
+# Rate limit restarts
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=alfred-gateway
+
+# Resource limits to prevent VPS overload
+MemoryMax=512M
+CPUQuota=50%
+
+# Security
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/opt/alfred /root/.signal-cli-alfred /var/log/alfred
+
+[Install]
+WantedBy=multi-user.target

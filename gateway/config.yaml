@@ -1,0 +1,83 @@
+# Alfred Gateway Configuration
+# CONFLICT-FREE: Uses completely separate resources from Clawdbot
+#
+# Key isolation measures:
+#   - Different bot tokens (mandatory)
+#   - Different signal-cli data directory (/root/.signal-cli-alfred)
+#   - Different ports (8765 vs Clawdbot's 18789)
+#   - Different process name (alfred-gateway vs clawdbot)
+#   - Different installation directory (/opt/alfred vs wherever Clawdbot is)
+
+gateway:
+  name: "alfred-gateway"
+  log_level: "INFO"
+  # Health check on different port than Clawdbot (which uses 18789)
+  health_check_port: 8765
+
+# Your user IDs - only YOU can interact with Alfred
+owner:
+  telegram_id: ""        # Get from @userinfobot on Telegram
+  discord_id: ""         # Enable Developer Mode, right-click yourself, Copy ID
+  signal_number: ""      # Your phone number (+1234567890 format)
+
+# Agent Zero connection
+agent_zero:
+  # "direct" = import Agent Zero Python modules directly
+  # "api" = connect via HTTP API
+  mode: "direct"
+  api_url: "http://localhost:50001/api/chat"
+  agent_zero_path: "/opt/alfred/agent-zero1"
+  agent_name: "alfred"
+
+# ============================================================
+# TELEGRAM - Must use DIFFERENT bot token than Clawdbot
+# ============================================================
+telegram:
+  enabled: true
+  # CRITICAL: Create a NEW bot via @BotFather
+  # DO NOT reuse Clawdbot's token - this will cause 409 Conflict errors
+  bot_token: ""
+  # Polling is more reliable for single-user
+  use_polling: true
+
+# ============================================================
+# DISCORD - Must use DIFFERENT application than Clawdbot
+# ============================================================
+discord:
+  enabled: true
+  # Create NEW application at: https://discord.com/developers/applications
+  # DO NOT reuse Clawdbot's Discord bot
+  bot_token: ""
+
+# ============================================================
+# SIGNAL - Uses SEPARATE data directory to avoid conflicts
+# ============================================================
+signal:
+  enabled: true
+  # CRITICAL: This MUST be different from Clawdbot's signal-cli directory
+  # Clawdbot typically uses: ~/.signal-cli or ~/.local/share/signal-cli
+  # We use: /root/.signal-cli-alfred (completely separate)
+  data_dir: "/root/.signal-cli-alfred"
+  phone_number: ""  # Register a NEW number or link as secondary device
+  signal_cli_path: "/usr/local/bin/signal-cli"
+
+# Message handling
+messages:
+  show_typing: true
+  max_length:
+    telegram: 4096
+    discord: 2000
+    signal: 2000
+  timeout: 300
+
+# Reliability settings
+reliability:
+  auto_reconnect: true
+  reconnect_delay_seconds: 5
+  # -1 = infinite reconnection attempts
+  max_reconnect_attempts: -1
+  heartbeat_interval_seconds: 60
+
+  # Resource limits to prevent VPS overload
+  max_concurrent_messages: 5
+  rate_limit_per_minute: 30

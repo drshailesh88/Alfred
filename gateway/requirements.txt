@@ -1,0 +1,16 @@
+# Alfred Gateway Dependencies
+# Python 3.10+ required
+
+# Telegram - python-telegram-bot (stable, well-maintained)
+python-telegram-bot>=20.7
+
+# Discord - discord.py (the standard library)
+discord.py>=2.3.2
+
+# Async HTTP client
+aiohttp>=3.9.0
+
+# Configuration
+pyyaml>=6.0
+
+# Signal uses subprocess to call signal-cli (no Python dependency)
