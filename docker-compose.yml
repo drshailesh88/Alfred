@@ -1,0 +1,221 @@
+# Alfred AI Personal Governance System
+# Docker Compose configuration for full deployment
+#
+# Usage:
+#   docker-compose up -d              # Start all services
+#   docker-compose logs -f alfred     # View Alfred logs
+#   docker-compose down               # Stop all services
+#   docker-compose down -v            # Stop and remove volumes
+
+version: '3.8'
+
+services:
+  # =============================================================================
+  # Alfred - Main AI Application
+  # =============================================================================
+  alfred:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: alfred:latest
+    container_name: alfred-ai
+    restart: unless-stopped
+
+    ports:
+      - "${ALFRED_PORT:-50001}:50001"
+
+    environment:
+      # API Keys
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - PERPLEXITY_API_KEY=${PERPLEXITY_API_KEY:-}
+
+      # Google Integration
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
+      - GOOGLE_REDIRECT_URI=${GOOGLE_REDIRECT_URI:-http://localhost:50001/oauth/callback}
+      - GOOGLE_REFRESH_TOKEN=${GOOGLE_REFRESH_TOKEN:-}
+
+      # WhatsApp Integration
+      - WHATSAPP_ACCESS_TOKEN=${WHATSAPP_ACCESS_TOKEN:-}
+      - WHATSAPP_PHONE_NUMBER_ID=${WHATSAPP_PHONE_NUMBER_ID:-}
+      - WHATSAPP_BUSINESS_ACCOUNT_ID=${WHATSAPP_BUSINESS_ACCOUNT_ID:-}
+      - WHATSAPP_WEBHOOK_VERIFY_TOKEN=${WHATSAPP_WEBHOOK_VERIFY_TOKEN:-}
+
+      # Qdrant Vector Database
+      - QDRANT_URL=http://qdrant:6333
+      - QDRANT_API_KEY=${QDRANT_API_KEY:-}
+
+      # PubMed MCP Server
+      - NCBI_API_KEY=${NCBI_API_KEY:-}
+      - NCBI_EMAIL=${NCBI_EMAIL:-}
+
+      # Memory Encryption
+      - MEMORY_ENCRYPTION_KEY=${MEMORY_ENCRYPTION_KEY:-}
+      - MEMORY_STORAGE_PATH=/app/data/memory
+
+      # Application Settings
+      - AGENT_PROFILE=alfred
+      - ALFRED_PORT=50001
+      - TZ=${TZ:-UTC}
+      - FLASK_SECRET_KEY=${FLASK_SECRET_KEY:-}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+
+      # MCP Configuration
+      - MCP_ENABLED=true
+      - PROJECT_ROOT=/app
+
+    volumes:
+      # Persistent data storage
+      - alfred_memory:/app/data/memory
+      - alfred_knowledge:/app/data/knowledge
+      - alfred_chats:/app/data/chats
+      - alfred_work_dir:/app/data/work_dir
+      - alfred_logs:/var/log/alfred
+
+      # Optional: Mount local directories for development
+      # - ./data/memory:/app/data/memory
+      # - ./data/knowledge:/app/data/knowledge
+
+    depends_on:
+      qdrant:
+        condition: service_healthy
+
+    networks:
+      - alfred-network
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:50001/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # =============================================================================
+  # Qdrant - Vector Database for Memory/RAG
+  # =============================================================================
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: alfred-qdrant
+    restart: unless-stopped
+
+    ports:
+      - "${QDRANT_PORT:-6333}:6333"
+      - "${QDRANT_GRPC_PORT:-6334}:6334"
+
+    environment:
+      - QDRANT__SERVICE__HTTP_PORT=6333
+      - QDRANT__SERVICE__GRPC_PORT=6334
+      - QDRANT__LOG_LEVEL=${QDRANT_LOG_LEVEL:-INFO}
+      # Optional: Enable API key authentication
+      # - QDRANT__SERVICE__API_KEY=${QDRANT_API_KEY:-}
+
+    volumes:
+      - qdrant_storage:/qdrant/storage
+      - qdrant_snapshots:/qdrant/snapshots
+
+    networks:
+      - alfred-network
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/readiness"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # =============================================================================
+  # Alfred Gateway - Multi-Platform Messaging (Optional)
+  # =============================================================================
+  gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: alfred:latest
+    container_name: alfred-gateway
+    restart: unless-stopped
+    profiles:
+      - gateway  # Only starts with: docker-compose --profile gateway up
+
+    command: ["python", "gateway/gateway.py"]
+
+    environment:
+      # Telegram Bot
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
+      - TELEGRAM_OWNER_ID=${TELEGRAM_OWNER_ID:-}
+
+      # Discord Bot
+      - DISCORD_BOT_TOKEN=${DISCORD_BOT_TOKEN:-}
+      - DISCORD_OWNER_ID=${DISCORD_OWNER_ID:-}
+
+      # Signal (requires signal-cli setup)
+      - SIGNAL_PHONE_NUMBER=${SIGNAL_PHONE_NUMBER:-}
+
+      # Alfred API endpoint
+      - ALFRED_API_URL=http://alfred:50001
+
+      - TZ=${TZ:-UTC}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+
+    volumes:
+      - gateway_config:/app/gateway/config
+      - alfred_logs:/var/log/alfred
+
+    depends_on:
+      alfred:
+        condition: service_healthy
+
+    networks:
+      - alfred-network
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+# =============================================================================
+# Networks
+# =============================================================================
+networks:
+  alfred-network:
+    driver: bridge
+    name: alfred-network
+
+# =============================================================================
+# Volumes
+# =============================================================================
+volumes:
+  # Alfred persistent data
+  alfred_memory:
+    name: alfred_memory
+  alfred_knowledge:
+    name: alfred_knowledge
+  alfred_chats:
+    name: alfred_chats
+  alfred_work_dir:
+    name: alfred_work_dir
+  alfred_logs:
+    name: alfred_logs
+
+  # Qdrant persistent data
+  qdrant_storage:
+    name: qdrant_storage
+  qdrant_snapshots:
+    name: qdrant_snapshots
+
+  # Gateway config (optional)
+  gateway_config:
+    name: gateway_config

@@ -1,0 +1,40 @@
+# Core
+anthropic
+openai
+pydantic>=2.0
+python-dateutil
+pytz
+
+# Data/ML
+paddleocr
+llama-index
+qdrant-client
+sentence-transformers
+bertopic
+keybert
+vaderSentiment
+detoxify
+
+# Web/API
+httpx
+aiohttp
+twscrape
+google-api-python-client
+google-auth-oauthlib
+
+# Utilities
+rich
+click
+python-dotenv
+structlog
+
+# Testing
+pytest
+pytest-asyncio
+pytest-cov
+
+# Evaluation Frameworks
+deepeval
+langsmith
+opentelemetry-api
+opentelemetry-sdk
