@@ -18,14 +18,14 @@ gateway:
 owner:
   telegram_id: "428068098,1803061323"  # @drss00 and @helloworld2409
   discord_id: ""         # Enable Developer Mode, right-click yourself, Copy ID
-  signal_number: ""      # Your phone number (+1234567890 format)
+  signal_number: "+918527086157"      # Your phone number (+1234567890 format)
 
 # Agent Zero connection
 agent_zero:
   # "direct" = import Agent Zero Python modules directly
   # "api" = connect via HTTP API (recommended for Docker)
   mode: "api"
-  api_url: "http://alfred-ai:5000/api_message"
+  api_url: "http://alfred-ai:50001/api_message"
   agent_zero_path: "/app/agent-zero1"
   agent_name: "alfred"
 
@@ -52,12 +52,12 @@ discord:
 # SIGNAL - Uses SEPARATE data directory to avoid conflicts
 # ============================================================
 signal:
-  enabled: false
+  enabled: true
   # CRITICAL: This MUST be different from Clawdbot's signal-cli directory
   # Clawdbot typically uses: ~/.signal-cli or ~/.local/share/signal-cli
   # We use: /root/.signal-cli-alfred (completely separate)
   data_dir: "/root/.signal-cli-alfred"
-  phone_number: ""  # Register a NEW number or link as secondary device
+  phone_number: "+918527086157"  # Register a NEW number or link as secondary device
   signal_cli_path: "/usr/local/bin/signal-cli"
 
 # Message handling
