@@ -43,7 +43,7 @@ telegram:
 # DISCORD - Must use DIFFERENT application than Clawdbot
 # ============================================================
 discord:
-  enabled: false
+  enabled: true
   # Create NEW application at: https://discord.com/developers/applications
   # DO NOT reuse Clawdbot's Discord bot
   bot_token: ""

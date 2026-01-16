@@ -90,6 +90,10 @@ COPY . /app/
 # Copy MCP configuration
 COPY .mcp.json /app/.mcp.json
 
+# Copy scripts directory and make executable
+COPY scripts/ /app/scripts/
+RUN chmod +x /app/scripts/*.py 2>/dev/null || true
+
 # Create necessary directories
 RUN mkdir -p \
     /app/data/memory \
@@ -118,5 +122,5 @@ EXPOSE 50001
 # Switch to non-root user
 USER alfred
 
-# Default command - run Agent Zero UI with Alfred profile
-CMD ["python", "agent-zero1/run_ui.py", "--port", "50001"]
+# Default command - run provider selection, then Agent Zero UI with Alfred profile
+CMD ["sh", "-c", "python /app/scripts/select_provider.py && python agent-zero1/run_ui.py --port 50001"]
