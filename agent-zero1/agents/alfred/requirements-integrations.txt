@@ -1,0 +1,50 @@
+# ALFRED Integration Dependencies
+# Install with: pip install -r agents/alfred/requirements-integrations.txt
+
+# ============================================
+# YouTube (Official API)
+# ============================================
+google-api-python-client>=2.0.0
+google-auth>=2.0.0
+google-auth-oauthlib>=1.0.0
+google-auth-httplib2>=0.1.0
+
+# ============================================
+# Google Calendar (MCP)
+# ============================================
+# Uses MCP server - no additional deps
+
+# ============================================
+# Instagram (Scraping - no API needed)
+# ============================================
+instaloader>=4.10.0
+
+# ============================================
+# Twitter/X (Scraping alternatives - no API needed)
+# ============================================
+# Option 1: Nitter scraping
+beautifulsoup4>=4.12.0
+lxml>=4.9.0
+
+# Option 2: Apify (if user has account)
+apify-client>=1.0.0
+
+# ============================================
+# Substack (RSS + Scraping)
+# ============================================
+feedparser>=6.0.0
+beautifulsoup4>=4.12.0  # Already listed above
+
+# ============================================
+# Common Dependencies
+# ============================================
+aiohttp>=3.8.0          # Async HTTP requests
+httpx>=0.24.0           # HTTP client with async support
+python-dateutil>=2.8.0  # Date parsing
+tenacity>=8.0.0         # Retry logic
+
+# ============================================
+# Optional: Enhanced scraping
+# ============================================
+# playwright>=1.40.0    # Browser automation (heavier)
+# selenium>=4.0.0       # Browser automation (alternative)

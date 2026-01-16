@@ -336,6 +336,49 @@ from .social_adapter import (
     EngagementType,
 )
 
+# =============================================================================
+# SCRAPING ADAPTERS (No API Required)
+# These work without official API access using web scraping, RSS, etc.
+# =============================================================================
+
+from .twitter_scraper import (
+    TwitterAdapter as TwitterScraperAdapter,
+    TwitterProfile,
+    Tweet,
+    TwitterStats,
+    DataSource as TwitterDataSource,
+    create_twitter_adapter as create_twitter_scraper,
+)
+
+from .instagram_scraper import (
+    InstagramAdapter as InstagramScraperAdapter,
+    InstagramProfile,
+    InstagramPost,
+    InstagramComment as InstaComment,
+    InstagramStory,
+    create_instagram_adapter as create_instagram_scraper,
+)
+
+from .substack_scraper import (
+    SubstackAdapter,
+    SubstackPublication,
+    SubstackPost,
+    SubstackStats,
+    DashboardMetrics,
+    create_substack_adapter,
+)
+
+from .manual_input import (
+    ManualInputManager,
+    ManualMetricEntry,
+    ManualSnapshot,
+    Platform as ManualPlatform,
+    GrowthReport,
+    PlatformSummary,
+    PLATFORM_METRICS,
+    create_manual_input_manager,
+)
+
 
 # =============================================================================
 # EXPORTS
@@ -373,7 +416,7 @@ __all__ = [
     "MessageType",
     "ChannelType",
     "DeliveryStatus",
-    # Social Adapters
+    # Social Adapters (MCP/API-based)
     "TwitterAdapter",
     "YouTubeAdapter",
     "InstagramAdapter",
@@ -383,4 +426,32 @@ __all__ = [
     "SocialMention",
     "Platform",
     "EngagementType",
+    # Scraping Adapters (No API Required)
+    "TwitterScraperAdapter",
+    "TwitterProfile",
+    "Tweet",
+    "TwitterStats",
+    "TwitterDataSource",
+    "create_twitter_scraper",
+    "InstagramScraperAdapter",
+    "InstagramProfile",
+    "InstagramPost",
+    "InstaComment",
+    "InstagramStory",
+    "create_instagram_scraper",
+    "SubstackAdapter",
+    "SubstackPublication",
+    "SubstackPost",
+    "SubstackStats",
+    "DashboardMetrics",
+    "create_substack_adapter",
+    # Manual Input Interface
+    "ManualInputManager",
+    "ManualMetricEntry",
+    "ManualSnapshot",
+    "ManualPlatform",
+    "GrowthReport",
+    "PlatformSummary",
+    "PLATFORM_METRICS",
+    "create_manual_input_manager",
 ]
