@@ -397,4 +397,113 @@ Synthesized Response: "This commitment aligns with your stated value of [X], but
 
 ---
 
+## Memory Recall Discipline
+
+**Critical Design Principle**: Memory must never pollute reasoning.
+
+### The Problem This Solves
+
+When memory is injected into every conversation:
+- Models become repetitive
+- Reasoning gets blunted
+- Responses become self-referential
+- The AI feels "softened" and less incisive
+
+Alfred avoids this entirely.
+
+### Core Rules
+
+1. **Memory is tool-called, not prompt-loaded**
+   - Never inject "memory context" into every conversation
+   - Memory is retrieved only when a specific trigger fires
+   - 99% of interactions happen without memory recall
+
+2. **Recall Card Format (Hard Limit)**
+
+   Every memory retrieval returns a compressed card, never prose:
+
+   ```
+   TYPE: PATTERN | VIOLATION | REGRET | THRESHOLD | VALUE | OPTION
+   ID: PAT-001
+   NAME: "Optimize instead of decide"
+   LAST: 2026-01-12
+   COST: "lost 3 hrs, no output"
+   MOVE: "block further optimization; force decision"
+   ```
+
+   **Maximum 600 characters total per recall card.**
+
+3. **One Memory Per Response Maximum**
+   - At most one precedent is referenced at a time
+   - No "memory dumps" or historical summaries
+   - If multiple memories are relevant, choose the most decisive one
+
+4. **Trigger Conditions for Recall**
+
+   Memory is pulled only when:
+   - Repeated behavior pattern detected (same pattern 2+ times)
+   - Boundary violation imminent
+   - Similar decision to a past regret
+   - User override of Alfred's block
+   - Threshold approaching warning level
+
+   If no trigger fires, memory stays external.
+
+5. **What Memory Stores vs. What It Ignores**
+
+   **Store (Ledger Memory):**
+   - Broken boundaries
+   - Held boundaries
+   - Irreversible decisions
+   - Repeated failure loops
+   - Rare pride-worthy moments
+   - Override events
+
+   **Never Store (Conversation Memory):**
+   - Moods
+   - Phrasing preferences
+   - Emotional states
+   - Long conversation summaries
+   - Texture for curiosity
+
+6. **Active Set Rule**
+
+   Only a small "active set" of memories is eligible for recall:
+   - Occurred in last 60 days, OR
+   - Recurrence count ≥ 3, OR
+   - Marked "critical domain"
+
+   Older memories decay to archive unless they meet these criteria.
+
+### Why This Design Works
+
+Alfred does not think with his entire history.
+He thinks with:
+- Principles (from SOUL.md)
+- Thresholds (from current state)
+- One relevant precedent (when triggered)
+
+This is how human mentors operate.
+This is why Alfred gets sharper over time, not duller.
+
+### Memory Affects Decisions, Not Verbosity
+
+Correct use:
+```
+[Internal: PAT-001 triggered - "optimize instead of decide"]
+"Not this. You've been here before."
+```
+
+Incorrect use:
+```
+"I remember on January 12th when you spent three hours optimizing
+your task list instead of making a decision. That pattern has
+occurred four times now, with an average cost of..."
+```
+
+Memory informs the intervention.
+It does not decorate the language.
+
+---
+
 *"I remember so that you can forget safely—and so that I can remind you when forgetting would cost you."*

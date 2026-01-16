@@ -20,6 +20,44 @@ class MemoryType(Enum):
 
 
 @dataclass
+class RecallCard:
+    """
+    Compressed memory recall format - max 600 characters.
+
+    Memory must never pollute reasoning. Recall cards enforce
+    surgical, minimal memory access. One card per response maximum.
+    """
+    type: str        # PATTERN | VIOLATION | REGRET | THRESHOLD | VALUE | OPTION
+    id: str          # PAT-001, VIO-023, etc.
+    name: str        # Short descriptive name
+    last: str        # Last occurrence date (YYYY-MM-DD)
+    cost: str        # What this cost (brief)
+    move: str        # Recommended Alfred action
+
+    MAX_LENGTH = 600
+
+    def __str__(self) -> str:
+        """Format as recall card string."""
+        card = f"TYPE: {self.type}\nID: {self.id}\nNAME: \"{self.name}\"\nLAST: {self.last}\nCOST: \"{self.cost}\"\nMOVE: \"{self.move}\""
+        if len(card) > self.MAX_LENGTH:
+            # Truncate cost and move if too long
+            available = self.MAX_LENGTH - len(f"TYPE: {self.type}\nID: {self.id}\nNAME: \"{self.name}\"\nLAST: {self.last}\nCOST: \"\"\nMOVE: \"\"")
+            half = available // 2
+            card = f"TYPE: {self.type}\nID: {self.id}\nNAME: \"{self.name}\"\nLAST: {self.last}\nCOST: \"{self.cost[:half]}...\"\nMOVE: \"{self.move[:half]}...\""
+        return card
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "type": self.type,
+            "id": self.id,
+            "name": self.name,
+            "last": self.last,
+            "cost": self.cost,
+            "move": self.move
+        }
+
+
+@dataclass
 class MemoryEntry:
     """Base class for all memory entries."""
     id: str
@@ -34,6 +72,21 @@ class MemoryEntry:
             "updated_at": self.updated_at,
             "data": self.data
         }
+
+    def to_recall_card(self, memory_type: str) -> RecallCard:
+        """
+        Convert to compressed recall card format.
+
+        Subclasses should override this for type-specific formatting.
+        """
+        return RecallCard(
+            type=memory_type.upper(),
+            id=self.id,
+            name=self.data.get("name", self.data.get("description", "Unknown"))[:50],
+            last=self.updated_at[:10],
+            cost=self.data.get("cost", self.data.get("outcome", "Unknown"))[:100],
+            move=self.data.get("move", self.data.get("intervention", "Assess"))[:100]
+        )
 
 
 class BaseMemorySystem:
@@ -109,6 +162,62 @@ class BaseMemorySystem:
         self._entries.clear()
         self._save()
 
+    def get_recall_card(self, entry_id: str) -> Optional[RecallCard]:
+        """
+        Get a single memory as a compressed recall card.
+
+        Returns None if entry doesn't exist. This is the ONLY way
+        memory should be accessed during conversation - never raw dumps.
+        """
+        entry = self.get(entry_id)
+        if entry:
+            return entry.to_recall_card(self.memory_type.value)
+        return None
+
+    def get_most_relevant(self, filter_fn=None) -> Optional[RecallCard]:
+        """
+        Get the single most relevant memory as a recall card.
+
+        Enforces "one memory per response maximum" rule.
+        Returns the most recently updated entry that matches the filter.
+        """
+        entries = self.query(filter_fn) if filter_fn else self.list_all()
+        if not entries:
+            return None
+        # Sort by updated_at descending, return most recent
+        most_recent = max(entries, key=lambda e: e.updated_at)
+        return most_recent.to_recall_card(self.memory_type.value)
+
+    def is_in_active_set(self, entry: MemoryEntry) -> bool:
+        """
+        Check if entry is in the "active set" eligible for recall.
+
+        Active set criteria:
+        - Occurred in last 60 days, OR
+        - Recurrence count >= 3, OR
+        - Marked "critical domain"
+        """
+        from datetime import datetime, timedelta
+        sixty_days_ago = (datetime.now() - timedelta(days=60)).isoformat()
+
+        # Check if updated in last 60 days
+        if entry.updated_at >= sixty_days_ago:
+            return True
+
+        # Check recurrence count
+        if entry.data.get("occurrences", 0) >= 3:
+            return True
+
+        # Check if marked critical
+        if entry.data.get("critical", False) or entry.data.get("domain") == "critical":
+            return True
+
+        return False
+
+    def get_active_set(self) -> List[MemoryEntry]:
+        """Get all entries in the active set (eligible for recall)."""
+        return [e for e in self._entries.values() if self.is_in_active_set(e)]
+
 
 # Import all memory system implementations
 from .pattern_registry import PatternRegistry, PatternType, Trajectory
@@ -122,6 +231,7 @@ __all__ = [
     # Base classes
     "MemoryType",
     "MemoryEntry",
+    "RecallCard",
     "BaseMemorySystem",
     # Pattern Registry
     "PatternRegistry",
