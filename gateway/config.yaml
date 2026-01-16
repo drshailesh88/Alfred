@@ -14,19 +14,19 @@ gateway:
   # Health check on different port than Clawdbot (which uses 18789)
   health_check_port: 8765
 
-# Your user IDs - only YOU can interact with Alfred
+# Your user IDs - only YOU can interact with Alfred (comma-separated for multiple)
 owner:
-  telegram_id: ""        # Get from @userinfobot on Telegram
+  telegram_id: "428068098,1803061323"  # @drss00 and @helloworld2409
   discord_id: ""         # Enable Developer Mode, right-click yourself, Copy ID
   signal_number: ""      # Your phone number (+1234567890 format)
 
 # Agent Zero connection
 agent_zero:
   # "direct" = import Agent Zero Python modules directly
-  # "api" = connect via HTTP API
-  mode: "direct"
-  api_url: "http://localhost:50001/api/chat"
-  agent_zero_path: "/opt/alfred/agent-zero1"
+  # "api" = connect via HTTP API (recommended for Docker)
+  mode: "api"
+  api_url: "http://alfred-ai:5000/api_message"
+  agent_zero_path: "/app/agent-zero1"
   agent_name: "alfred"
 
 # ============================================================
@@ -34,9 +34,8 @@ agent_zero:
 # ============================================================
 telegram:
   enabled: true
-  # CRITICAL: Create a NEW bot via @BotFather
-  # DO NOT reuse Clawdbot's token - this will cause 409 Conflict errors
-  bot_token: ""
+  # @Alfred_BatmanBot - created via @BotFather
+  bot_token: "8552150374:AAGntEF09H89r5YOm6Dj8bBe_aN8dgWpom4"
   # Polling is more reliable for single-user
   use_polling: true
 
@@ -44,7 +43,7 @@ telegram:
 # DISCORD - Must use DIFFERENT application than Clawdbot
 # ============================================================
 discord:
-  enabled: true
+  enabled: false
   # Create NEW application at: https://discord.com/developers/applications
   # DO NOT reuse Clawdbot's Discord bot
   bot_token: ""
@@ -53,7 +52,7 @@ discord:
 # SIGNAL - Uses SEPARATE data directory to avoid conflicts
 # ============================================================
 signal:
-  enabled: true
+  enabled: false
   # CRITICAL: This MUST be different from Clawdbot's signal-cli directory
   # Clawdbot typically uses: ~/.signal-cli or ~/.local/share/signal-cli
   # We use: /root/.signal-cli-alfred (completely separate)

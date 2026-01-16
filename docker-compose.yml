@@ -7,8 +7,6 @@
 #   docker-compose down               # Stop all services
 #   docker-compose down -v            # Stop and remove volumes
 
-version: '3.8'
-
 services:
   # =============================================================================
   # Alfred - Main AI Application
@@ -25,8 +23,13 @@ services:
       - "${ALFRED_PORT:-50001}:50001"
 
     environment:
-      # API Keys
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      # API Keys (Chinese LLMs as primary)
+      - ZAI_API_KEY=${ZAI_API_KEY:-}
+      - ZHIPU_API_KEY=${ZHIPU_API_KEY:-}
+      - MOONSHOT_API_KEY=${MOONSHOT_API_KEY:-}
+      - MINIMAX_API_KEY=${MINIMAX_API_KEY:-}
+      # Optional Western LLMs
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       - PERPLEXITY_API_KEY=${PERPLEXITY_API_KEY:-}
 
@@ -78,8 +81,7 @@ services:
       # - ./data/knowledge:/app/data/knowledge
 
     depends_on:
-      qdrant:
-        condition: service_healthy
+      - qdrant
 
     networks:
       - alfred-network
@@ -174,8 +176,7 @@ services:
       - alfred_logs:/var/log/alfred
 
     depends_on:
-      alfred:
-        condition: service_healthy
+      - alfred
 
     networks:
       - alfred-network
@@ -191,7 +192,7 @@ services:
 # =============================================================================
 networks:
   alfred-network:
-    driver: bridge
+    external: true
     name: alfred-network
 
 # =============================================================================

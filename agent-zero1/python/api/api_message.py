@@ -25,7 +25,7 @@ class ApiMessage(ApiHandler):
 
     @classmethod
     def requires_api_key(cls) -> bool:
-        return True  # Require API key
+        return False  # Disabled for internal Docker network access
 
     async def process(self, input: dict, request: Request) -> dict | Response:
         # Extract parameters
@@ -83,6 +83,8 @@ class ApiMessage(ApiHandler):
 
         # Process message
         try:
+            import asyncio
+
             # Log the message
             attachment_filenames = [os.path.basename(path) for path in attachment_paths] if attachment_paths else []
 
@@ -103,9 +105,20 @@ class ApiMessage(ApiHandler):
                 kvps={"attachments": attachment_filenames},
             )
 
-            # Send message to agent
+            # Send message to agent with timeout
             task = context.communicate(UserMessage(message, attachment_paths))
-            result = await task.result()
+            try:
+                result = await asyncio.wait_for(task.result(), timeout=60.0)
+            except asyncio.TimeoutError:
+                # On timeout, try to extract any response that was generated
+                PrintStyle.error("API timeout - extracting partial response")
+                result = self._extract_response_from_context(context)
+                if result:
+                    return {
+                        "context_id": context_id,
+                        "response": result
+                    }
+                return Response('{"error": "Request timeout - no response generated"}', status=504, mimetype="application/json")
 
             # Clean up expired chats
             self._cleanup_expired_chats()
@@ -117,7 +130,148 @@ class ApiMessage(ApiHandler):
 
         except Exception as e:
             PrintStyle.error(f"External API error: {e}")
+            # Try to extract response from context log even if there was an error
+            extracted = self._extract_response_from_context(context)
+            if extracted:
+                return {
+                    "context_id": context_id,
+                    "response": extracted
+                }
             return Response(f'{{"error": "{str(e)}"}}', status=500, mimetype="application/json")
+
+    def _extract_response_from_context(self, context) -> str | None:
+        """Extract the last response from context logs"""
+        try:
+            import re
+            import json
+
+            # Try to get from agent0's history (most reliable)
+            agent = context.agent0 if hasattr(context, 'agent0') else None
+            if agent and hasattr(agent, 'history') and agent.history:
+                history = agent.history
+                # Check current topic messages
+                if hasattr(history, 'current') and history.current:
+                    for msg in reversed(history.current.messages):
+                        if msg.ai:  # AI message
+                            content = msg.content
+                            extracted = self._extract_message_from_content(content)
+                            if extracted:
+                                PrintStyle().print(f"Extracted from current topic: {extracted[:100]}...")
+                                return extracted
+
+                # Check historical topics
+                if hasattr(history, 'topics'):
+                    for topic in reversed(history.topics):
+                        for msg in reversed(topic.messages):
+                            if msg.ai:
+                                content = msg.content
+                                extracted = self._extract_message_from_content(content)
+                                if extracted:
+                                    PrintStyle().print(f"Extracted from topic: {extracted[:100]}...")
+                                    return extracted
+
+            # Fallback: Search context logs
+            for entry in reversed(context.log.logs):
+                content = entry.get("content", "")
+                if not content:
+                    continue
+
+                # Skip system/error messages
+                entry_type = entry.get("type", "")
+                if entry_type in ["error", "warning"]:
+                    continue
+
+                if isinstance(content, str):
+                    extracted = self._extract_message_from_content(content)
+                    if extracted:
+                        PrintStyle().print(f"Extracted from log: {extracted[:100]}...")
+                        return extracted
+
+            # Debug: print what we have
+            PrintStyle().print(f"Extraction failed. Log count: {len(context.log.logs) if hasattr(context.log, 'logs') else 'N/A'}")
+            if agent and hasattr(agent, 'history') and agent.history:
+                h = agent.history
+                msg_count = len(h.current.messages) if hasattr(h, 'current') and h.current else 0
+                PrintStyle().print(f"History current topic messages: {msg_count}")
+                if msg_count > 0:
+                    for i, msg in enumerate(h.current.messages[-3:]):
+                        content_preview = str(msg.content)[:150] if msg.content else "None"
+                        PrintStyle().print(f"Msg {i}: ai={msg.ai}, content={content_preview}...")
+
+            return None
+        except Exception as e:
+            PrintStyle.error(f"Failed to extract response: {e}")
+            import traceback
+            PrintStyle.error(traceback.format_exc())
+            return None
+
+    def _extract_message_from_content(self, content) -> str | None:
+        """Extract message from various content formats"""
+        import re
+        import json
+
+        if not content:
+            return None
+
+        # If content is a dict, try to get from tool_args
+        if isinstance(content, dict):
+            # Check for assistant content with tool_args
+            inner = content.get("content", content)
+            if isinstance(inner, str):
+                content = inner
+            elif isinstance(inner, dict):
+                # Try tool_args.text or tool_args.message
+                tool_args = inner.get("tool_args", {})
+                if isinstance(tool_args, dict):
+                    msg = tool_args.get("text") or tool_args.get("message")
+                    if msg and isinstance(msg, str) and len(msg) > 10:
+                        return self._unescape_string(msg)
+                content = str(inner)
+
+        if not isinstance(content, str):
+            content = str(content)
+
+        # Try to parse as JSON and extract tool_args
+        try:
+            data = json.loads(content)
+            if isinstance(data, dict):
+                tool_args = data.get("tool_args", {})
+                if isinstance(tool_args, dict):
+                    # Look for text (response tool) or message (a2a_chat tool)
+                    msg = tool_args.get("text") or tool_args.get("message")
+                    if msg and isinstance(msg, str) and len(msg) > 10:
+                        return self._unescape_string(msg)
+        except (json.JSONDecodeError, TypeError):
+            pass
+
+        # Try regex extraction for "text" field (response tool)
+        match = re.search(r'"text"\s*:\s*"((?:[^"\\]|\\.)*)"\s*[,}]', content, re.DOTALL)
+        if match:
+            msg = match.group(1)
+            if len(msg) > 10:
+                return self._unescape_string(msg)
+
+        # Try regex extraction for "message" field (a2a_chat or direct message)
+        match = re.search(r'"message"\s*:\s*"((?:[^"\\]|\\.)*)"\s*[,}]', content, re.DOTALL)
+        if match:
+            msg = match.group(1)
+            if len(msg) > 10:
+                return self._unescape_string(msg)
+
+        # Check if content itself is a reasonable response (for plain text responses)
+        if len(content) > 20 and len(content) < 3000:
+            # Skip if it looks like JSON structure
+            if content.strip().startswith('{') or '"tool_name"' in content:
+                return None
+            # Look for Alfred-like responses
+            if any(phrase in content.lower() for phrase in ["greetings", "sir", "alfred", "steward", "assist", "may i", "how can", "good evening", "at your service"]):
+                return content
+
+        return None
+
+    def _unescape_string(self, s: str) -> str:
+        """Unescape JSON string escape sequences"""
+        return s.replace('\\n', '\n').replace('\\r', '\r').replace('\\t', '\t').replace('\\"', '"').replace('\\\\', '\\')
 
     @classmethod
     def _cleanup_expired_chats(cls):

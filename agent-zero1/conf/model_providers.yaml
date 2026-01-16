@@ -84,6 +84,21 @@ chat:
   xai:
     name: xAI
     litellm_provider: xai
+  # ============================================================================
+  # Chinese LLM Providers
+  # ============================================================================
+  zhipu:
+    name: Zhipu AI (GLM 4.7)
+    litellm_provider: zhipu
+  zai:
+    name: Z.AI (GLM 4.7)
+    litellm_provider: zai
+  minimax:
+    name: MiniMax (M2/M2.1)
+    litellm_provider: minimax
+  moonshot:
+    name: Moonshot (Kimi K2)
+    litellm_provider: moonshot
   other:
     name: Other OpenAI compatible
     litellm_provider: openai

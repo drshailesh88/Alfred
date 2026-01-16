@@ -42,11 +42,13 @@ class BaseAdapter(ABC):
 
         Args:
             config: Platform-specific configuration
-            owner_id: The only user allowed to interact
+            owner_id: User(s) allowed to interact (comma-separated for multiple)
             on_message: Callback for incoming messages
         """
         self.config = config
-        self.owner_id = str(owner_id)
+        # Support multiple owner IDs (comma-separated)
+        self.owner_ids = [str(oid.strip()) for oid in str(owner_id).split(",") if oid.strip()]
+        self.owner_id = self.owner_ids[0] if self.owner_ids else ""  # Primary owner for backwards compat
         self.on_message = on_message
         self.logger = logging.getLogger(f"Alfred.{self.__class__.__name__}")
         self._running = False
@@ -83,8 +85,8 @@ class BaseAdapter(ABC):
         pass
 
     def is_owner(self, user_id: str) -> bool:
-        """Check if message is from the owner."""
-        return str(user_id) == self.owner_id
+        """Check if message is from an authorized owner."""
+        return str(user_id) in self.owner_ids
 
     async def handle_message(self, message: IncomingMessage):
         """

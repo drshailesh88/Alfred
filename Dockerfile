@@ -41,7 +41,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     tesseract-ocr \
     libtesseract-dev \
     # For image processing
-    libgl1-mesa-glx \
+    libgl1 \
     libglib2.0-0 \
     libsm6 \
     libxext6 \
@@ -64,12 +64,14 @@ RUN playwright install-deps chromium || true
 # Copy requirements files
 COPY requirements.txt /app/requirements.txt
 COPY agent-zero1/requirements.txt /app/agent-zero1/requirements.txt
+COPY agent-zero1/requirements2.txt /app/agent-zero1/requirements2.txt
 COPY gateway/requirements.txt /app/gateway/requirements.txt
 
-# Install Python dependencies
+# Install Python dependencies (requirements2.txt contains litellm)
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel \
     && pip install --no-cache-dir -r /app/requirements.txt \
     && pip install --no-cache-dir -r /app/agent-zero1/requirements.txt \
+    && pip install --no-cache-dir -r /app/agent-zero1/requirements2.txt \
     && pip install --no-cache-dir -r /app/gateway/requirements.txt
 
 # Install Playwright browser
