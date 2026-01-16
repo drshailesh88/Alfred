@@ -29,10 +29,10 @@ FALLBACK_CHAIN = [
         "vision": False,
     },
     {
-        "name": "Moonshot (Kimi K2)",
+        "name": "Moonshot (Kimi K2 Thinking)",
         "env_keys": ["MOONSHOT_API_KEY"],
         "provider": "moonshot",
-        "chat_model": "kimi-k2-0711-preview",
+        "chat_model": "kimi-k2-thinking-preview",
         "util_model": "moonshot-v1-8k",
         "vision": False,
     },
