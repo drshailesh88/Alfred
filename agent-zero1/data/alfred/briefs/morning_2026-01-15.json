@@ -1,0 +1,29 @@
+{
+  "date": "2026-01-15",
+  "reputation_status": "GREEN",
+  "reputation_reason": null,
+  "todays_constraint": "No specific constraints - normal operations",
+  "top_priorities": [],
+  "blocked_today": [
+    {
+      "item": "Reply to Twitter debate",
+      "reason": "Reputation state monitoring active",
+      "blocked_at": "2026-01-15T23:17:05.629433",
+      "blocker_source": "reputation_sentinel"
+    },
+    {
+      "item": "Real-time Instagram comment",
+      "reason": "Default RED policy for reactive engagement",
+      "blocked_at": "2026-01-15T23:17:05.629443",
+      "blocker_source": "social_triage"
+    }
+  ],
+  "calendar_snapshot": {
+    "total_events": 0,
+    "protected_blocks": 0,
+    "meetings": 0,
+    "focus_blocks": 0,
+    "schedule": []
+  },
+  "generated_at": "2026-01-15T23:17:05.629765"
+}

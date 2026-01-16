@@ -157,7 +157,34 @@ class StrategyAgent(BaseAgent):
         return True, "Operation permitted"
 
 
-# Import Learning Pipeline Agents
+# ============================================================================
+# PHASE 2 - CORE INFRASTRUCTURE AGENTS
+# ============================================================================
+
+from .intake_agent import IntakeAgent
+from .patient_data_agent import PatientDataAgent
+from .scheduling_agent import SchedulingAgent
+from .shipping_governor import ShippingGovernor
+from .financial_sentinel import FinancialSentinel
+
+# ============================================================================
+# PHASE 3 - MONITORING & SIGNAL AGENTS
+# ============================================================================
+
+from .world_radar import WorldRadar
+from .reputation_sentinel import ReputationSentinel
+from .social_triage import SocialTriage
+
+# ============================================================================
+# PHASE 4 - CONTENT GENERATION AGENTS
+# ============================================================================
+
+from .research_agent import ResearchAgent
+
+# ============================================================================
+# PHASE 5 - LEARNING PIPELINE AGENTS
+# ============================================================================
+
 from .learning_curator import (
     LearningCurator,
     LearningQueueItem,
@@ -257,7 +284,20 @@ from .daily_brief import (
     create_daily_brief_agent,
 )
 
-# Import Weekly Brief Generator
+# ============================================================================
+# PHASE 6 - STRATEGY & ANALYTICS AGENTS
+# ============================================================================
+
+from .social_metrics_harvester import SocialMetricsHarvester
+from .audience_signals_extractor import AudienceSignalsExtractor
+from .content_strategy_analyst import ContentStrategyAnalyst
+from .content_manager import ContentManager
+from .relationship_nudge_agent import RelationshipNudgeAgent
+
+# ============================================================================
+# OPERATIONS - WEEKLY BRIEF GENERATOR
+# ============================================================================
+
 from .weekly_brief import (
     WeeklyBriefGenerator,
     WeeklyBrief,
@@ -291,6 +331,24 @@ __all__ = [
     "OperationsAgent",
     "LearningAgent",
     "StrategyAgent",
+    # Phase 2 - Core Infrastructure
+    "IntakeAgent",
+    "PatientDataAgent",
+    "SchedulingAgent",
+    "ShippingGovernor",
+    "FinancialSentinel",
+    # Phase 3 - Monitoring & Signal
+    "WorldRadar",
+    "ReputationSentinel",
+    "SocialTriage",
+    # Phase 4 - Content Generation
+    "ResearchAgent",
+    # Phase 6 - Strategy & Analytics
+    "SocialMetricsHarvester",
+    "AudienceSignalsExtractor",
+    "ContentStrategyAnalyst",
+    "ContentManager",
+    "RelationshipNudgeAgent",
     # Learning Curator
     "LearningCurator",
     "LearningQueueItem",
