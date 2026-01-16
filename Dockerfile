@@ -97,11 +97,12 @@ RUN mkdir -p \
     /app/data/chats \
     /app/data/work_dir \
     /app/data/logs \
+    /app/agent-zero1/tmp \
     /var/log/alfred
 
-# Set permissions
+# Set permissions (tmp directory needs write access for settings)
 RUN chmod -R 755 /app \
-    && chmod 777 /app/data /app/data/* /var/log/alfred
+    && chmod 777 /app/data /app/data/* /var/log/alfred /app/agent-zero1/tmp
 
 # Create non-root user for security
 RUN useradd --create-home --shell /bin/bash alfred \
@@ -109,7 +110,7 @@ RUN useradd --create-home --shell /bin/bash alfred \
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:${ALFRED_PORT}/api/health || exit 1
+    CMD curl -f http://localhost:${ALFRED_PORT}/health || exit 1
 
 # Expose port
 EXPOSE 50001

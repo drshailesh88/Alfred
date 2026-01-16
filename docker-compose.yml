@@ -87,7 +87,7 @@ services:
       - alfred-network
 
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:50001/api/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:50001/health"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -165,14 +165,15 @@ services:
       # Signal (requires signal-cli setup)
       - SIGNAL_PHONE_NUMBER=${SIGNAL_PHONE_NUMBER:-}
 
-      # Alfred API endpoint
-      - ALFRED_API_URL=http://alfred:50001
+      # Alfred API endpoint (uses container_name from alfred service)
+      - ALFRED_API_URL=http://alfred-ai:50001
 
       - TZ=${TZ:-UTC}
       - LOG_LEVEL=${LOG_LEVEL:-INFO}
 
     volumes:
-      - gateway_config:/app/gateway/config
+      # Note: config.yaml is baked into the image, no volume mount needed
+      # To customize, rebuild image or mount specific config file
       - alfred_logs:/var/log/alfred
 
     depends_on:
@@ -192,7 +193,7 @@ services:
 # =============================================================================
 networks:
   alfred-network:
-    external: true
+    driver: bridge
     name: alfred-network
 
 # =============================================================================
@@ -216,7 +217,3 @@ volumes:
     name: qdrant_storage
   qdrant_snapshots:
     name: qdrant_snapshots
-
-  # Gateway config (optional)
-  gateway_config:
-    name: gateway_config
