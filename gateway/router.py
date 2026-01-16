@@ -86,7 +86,7 @@ class AlfredRouter:
 
     def _init_api_mode(self, az_config: dict):
         """Initialize Agent Zero in API mode."""
-        self.api_url = az_config.get("api_url", "http://localhost:50001/api/chat")
+        self.api_url = az_config.get("api_url", "http://localhost:50001/api_message")
         self._mode = "api"
         self.logger.info(f"Agent Zero configured in API mode: {self.api_url}")
 
