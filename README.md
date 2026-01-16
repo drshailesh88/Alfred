@@ -3,6 +3,30 @@
 > **Not an assistant. A steward.**
 > **Not a productivity tool. A protection system.**
 
+---
+
+## Quick Start
+
+```bash
+# Clone
+git clone https://github.com/yourusername/Alfred.git
+cd Alfred
+
+# Configure
+cp .env.example .env
+# Edit .env with your ANTHROPIC_API_KEY
+
+# Deploy
+docker-compose up -d
+
+# Access
+open http://localhost:50001
+```
+
+For Telegram/Signal integration, see [DEPLOYMENT.md](DEPLOYMENT.md).
+
+---
+
 ## What is Alfred?
 
 Alfred is a personal AI governance system built for a senior interventional cardiologist. Named after Alfred Pennyworth from Christopher Nolan's Dark Knight trilogy, it embodies the same principles: disciplined stewardship, surgical honesty, and care without indulgence.
@@ -20,6 +44,22 @@ The diagnosed failure mode:
 
 Six simultaneous roles without orchestration: **Clinician, Builder, Founder, Educator, Learner, Father.**
 
+---
+
+## Current Implementation Status
+
+| Phase | Status | Components |
+|-------|--------|------------|
+| Phase 1: Foundation | ✅ Complete | 15 prompt files (~165KB) |
+| Phase 2-6: Sub-Agents | ✅ Complete | 20 agents (~2.2MB) |
+| Phase 7: Memory Systems | ✅ Complete | 6 systems (~125KB) |
+| Phase 8: Platform Integrations | ✅ Complete | Calendar, Gmail, WhatsApp, Social |
+| Phase 9.1-9.3: Deployment | ✅ Complete | Docker, Daily/Weekly Briefs, CLI |
+| Phase 9.4: Live Simulation | ⏳ Pending | First operational test |
+| Phase 9.5: Threshold Calibration | ⏳ Pending | Fine-tuning |
+
+---
+
 ## Architecture
 
 ```
@@ -27,7 +67,7 @@ USER
   ↓
 ALFRED (Chief of Staff / Governor)
   ↓
-20 SPECIALIZED SUB-AGENTS
+20 SPECIALIZED SUB-AGENTS + 6 MEMORY SYSTEMS
 ```
 
 ### The 20 Sub-Agents
@@ -40,6 +80,19 @@ ALFRED (Chief of Staff / Governor)
 | **Strategy/Analytics** | Social Metrics Harvester, Audience Signals Extractor, Content Strategy Analyst |
 | **Operations** | Intake Agent, Patient Data Agent, Scheduling Agent, Content Manager, Shipping Governor, Financial Sentinel, Relationship Nudge Agent |
 
+### The 6 Memory Systems
+
+| Memory System | Purpose |
+|--------------|---------|
+| **Pattern Registry** | Tracks behavioral patterns (obsession loops, avoidance, depletion) |
+| **Values Hierarchy** | Monitors stated vs. revealed values with conflict detection |
+| **Self-Violation Log** | Records standards breaches and justification patterns |
+| **Regret Memory** | Stores decision outcomes and extracted lessons |
+| **Threshold Map** | Guards critical boundaries (sleep, finances, reputation) |
+| **Optionality Register** | Tracks exit options being preserved or burned |
+
+---
+
 ## How Alfred Differs from Other AI Assistants
 
 | JARVIS (typical AI) | ALFRED |
@@ -50,6 +103,8 @@ ALFRED (Chief of Staff / Governor)
 | Diplomatic disagreement | Surgical honesty that risks rupture |
 | Task completion focused | Sustainability focused |
 | Feels helpful always | Sometimes obstructive, frequently right |
+
+---
 
 ## Core Principles
 
@@ -62,44 +117,138 @@ ALFRED (Chief of Staff / Governor)
 7. **Allowed to disagree** - Challenges framing, surfaces disconfirming evidence
 8. **Speaks infrequently** - Scarcity gives weight
 
+---
+
 ## Repository Structure
 
 ```
 Alfred/
-├── PLAN.md                    # Master implementation plan (~50KB)
-├── IMPLEMENTATION_PLAN.md     # Detailed implementation notes
-├── chatgptdiscuss.MD          # Original ChatGPT discussions (~140KB)
-├── README.md                  # This file
-├── agent-zero1/               # Agent Zero framework (submodule)
-│   └── agents/alfred/         # Alfred agent configuration
-│       ├── SOUL.md            # Core identity (immutable)
-│       ├── GOVERNANCE.md      # Governance framework
-│       └── prompts/           # All prompt files (~175KB)
-└── gateway/                   # Gateway integration (TBD)
+├── README.md                      # This file
+├── DEPLOYMENT.md                  # Deployment & messaging setup guide
+├── IMPLEMENTATION_PLAN.md         # Detailed implementation roadmap
+├── PLAN.md                        # Master project plan
+│
+├── Dockerfile                     # Docker build configuration
+├── docker-compose.yml             # Full deployment stack
+├── .env.example                   # Environment template
+├── .mcp.json                      # MCP server configuration
+├── requirements.txt               # Python dependencies
+├── pyproject.toml                 # Package configuration
+├── alfred_cli.py                  # CLI interface
+│
+├── agent-zero1/                   # Agent Zero framework
+│   └── agents/alfred/             # Alfred agent configuration
+│       ├── SOUL.md                # Core identity (immutable)
+│       ├── GOVERNANCE.md          # Governance framework
+│       ├── prompts/               # Prompt files (~175KB)
+│       ├── tools/                 # 20 sub-agent implementations
+│       ├── memory/                # 6 memory systems
+│       └── integrations/          # Platform adapters
+│
+├── gateway/                       # Multi-platform messaging
+│   ├── gateway.py                 # Main gateway orchestrator
+│   ├── router.py                  # Message routing
+│   ├── config.example.yaml        # Configuration template
+│   └── adapters/                  # Platform adapters
+│       ├── telegram_adapter.py    # Telegram integration
+│       ├── signal_adapter.py      # Signal integration
+│       └── discord_adapter.py     # Discord integration
+│
+├── evals/                         # Evaluation framework
+│   ├── agent_evals.py             # Agent test suites
+│   ├── behavioral.py              # Governance rule tests
+│   └── tracing.py                 # LangSmith integration
+│
+└── tests/                         # Test suite
 ```
+
+---
+
+## Deployment Options
+
+### 1. Docker (Recommended)
+
+```bash
+# Basic deployment (Web UI only)
+docker-compose up -d
+
+# With messaging gateway (Telegram/Signal/Discord)
+docker-compose --profile gateway up -d
+```
+
+### 2. Talk to Alfred via Messaging
+
+| Platform | Setup Required |
+|----------|----------------|
+| **Telegram** | Create bot via @BotFather |
+| **Signal** | Install signal-cli, register number |
+| **Discord** | Create bot in Developer Portal |
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed instructions.
+
+### 3. VPS Deployment
+
+Alfred is VPS-ready with:
+- Docker deployment
+- Health checks
+- Persistent volumes
+- Reverse proxy support (nginx)
+- SSL/TLS ready
+
+Minimum requirements: 4GB RAM, 2 CPU cores, 20GB storage.
+
+---
 
 ## Key Documents
 
 | Document | Purpose | Size |
 |----------|---------|------|
-| `PLAN.md` | Master tracking, all agent specs, roadmap | ~50KB |
-| `agent-zero1/agents/alfred/SOUL.md` | Alfred's identity (immutable) | 5.6KB |
-| `agent-zero1/agents/alfred/GOVERNANCE.md` | Complete governance framework | 16KB |
-| `agent-zero1/agents/alfred/prompts/agent.system.subagents.md` | All 20 agent specifications | 53KB |
-| `chatgptdiscuss.MD` | Original design discussions | 140KB |
+| `DEPLOYMENT.md` | Deployment & messaging setup | 12KB |
+| `IMPLEMENTATION_PLAN.md` | Complete implementation roadmap | 50KB |
+| `SOUL.md` | Alfred's identity (immutable) | 5.6KB |
+| `GOVERNANCE.md` | Complete governance framework | 23KB |
+| `agent.system.subagents.md` | All 20 agent specifications | 56KB |
 
-## Current Status
+---
 
-- ✅ **Phase 1 Complete** - Foundation built (15 files, ~120KB)
-- ✅ **Phase 1.5 Complete** - All 20 sub-agents fully specified (56KB, 1,923 lines)
-- 🔄 **Phase 2 Pending** - Tool implementation for all agents
-- 📋 **Phase 3 Pending** - Memory & detection systems
-- 📋 **Phase 4 Pending** - Platform integrations
-- 📋 **Phase 5 Pending** - Operational testing
+## Evaluation Framework
+
+Alfred includes comprehensive evaluation tools:
+
+```bash
+# Run behavioral tests
+python -m pytest evals/behavioral.py -v
+
+# Run agent evaluations
+python -m evals.agent_evals
+```
+
+**Test Categories:**
+- Governance rule compliance (14 tests)
+- Agent response quality (9 suites)
+- Pattern detection accuracy
+- State machine correctness
+
+---
+
+## CLI Interface
+
+```bash
+# Check Alfred status
+python alfred_cli.py status
+
+# Get morning brief
+python alfred_cli.py brief --type morning
+
+# Run health check
+python alfred_cli.py check
+```
+
+---
 
 ## The Truth Test
 
-From the original ChatGPT discussion:
+From the original design:
 
 > "If it feels 'helpful' all the time, you built another assistant, not Alfred."
 
@@ -110,17 +259,30 @@ Alfred is designed to:
 
 **That's the point.**
 
-## Built With
-
-- [Agent Zero](https://github.com/drshailesh88/agent-zero1) - Multi-agent AI framework
-- Claude / GPT-4 - LLM backbone
-- Custom governance prompts - ~175KB of Alfred-specific configuration
+---
 
 ## Philosophy
 
 > "Quiet is not lack of progress. Quiet is absence of self-sabotage."
 
 > "Alfred enables. This is known. The alternative (no steward) leads somewhere worse. But the bargain is not clean, and Alfred tracks what it enables."
+
+---
+
+## Built With
+
+- [Agent Zero](https://github.com/frdel/agent-zero) - Multi-agent AI framework
+- Claude (Anthropic) - Primary LLM
+- Qdrant - Vector database for memory/RAG
+- Docker - Containerized deployment
+- python-telegram-bot - Telegram integration
+- signal-cli - Signal integration
+
+---
+
+## Contributing
+
+This is a personal governance system built for specific needs. The architecture and principles may be useful for building similar systems, but the specific configurations are highly personal.
 
 ---
 

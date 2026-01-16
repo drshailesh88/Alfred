@@ -1,0 +1,152 @@
+# ==============================================================================
+# Alfred Gateway - Configuration Example
+# ==============================================================================
+# Copy this file to config.yaml and fill in your values:
+#   cp config.example.yaml config.yaml
+#
+# The gateway enables you to talk to Alfred via Telegram, Signal, or Discord
+# instead of (or in addition to) the web UI.
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# Owner Configuration
+# ------------------------------------------------------------------------------
+# Only the owner can communicate with Alfred through messaging platforms.
+# This is a security measure to prevent unauthorized access.
+#
+# How to find your IDs:
+#   Telegram: Message @userinfobot
+#   Discord:  Enable Developer Mode, right-click your name, Copy ID
+#   Signal:   Use your phone number with country code
+owner:
+  telegram_id: ""       # e.g., "123456789"
+  discord_id: ""        # e.g., "123456789012345678"
+  signal_number: ""     # e.g., "+1234567890"
+
+# ------------------------------------------------------------------------------
+# Alfred API Connection
+# ------------------------------------------------------------------------------
+alfred:
+  # When running in Docker, use the internal service name
+  api_url: "http://alfred:50001"
+
+  # When running locally (non-Docker), use localhost
+  # api_url: "http://localhost:50001"
+
+  # Request timeout in seconds (Claude can take time to respond)
+  timeout: 120
+
+# ------------------------------------------------------------------------------
+# Telegram Configuration
+# ------------------------------------------------------------------------------
+# Create a bot via @BotFather on Telegram to get your token.
+#
+# Steps:
+#   1. Message @BotFather
+#   2. Send /newbot
+#   3. Follow prompts to create bot
+#   4. Copy the token (format: 123456789:ABCdefGHI...)
+#
+# IMPORTANT: Use a DIFFERENT bot than any other Telegram bots you run!
+# Each bot token can only be used by one process at a time.
+telegram:
+  enabled: false
+  bot_token: ""         # From @BotFather
+
+  # Optional: Customize bot behavior
+  # drop_pending: true  # Ignore messages sent while bot was offline
+
+# ------------------------------------------------------------------------------
+# Discord Configuration
+# ------------------------------------------------------------------------------
+# Create a bot at https://discord.com/developers/applications
+#
+# Steps:
+#   1. Create New Application
+#   2. Go to Bot section
+#   3. Add Bot
+#   4. Copy token
+#   5. Enable "Message Content Intent" under Privileged Intents
+#   6. Use OAuth2 URL Generator to invite bot to your server
+#      - Scopes: bot
+#      - Permissions: Send Messages, Read Message History
+discord:
+  enabled: false
+  bot_token: ""         # From Discord Developer Portal
+
+# ------------------------------------------------------------------------------
+# Signal Configuration
+# ------------------------------------------------------------------------------
+# Requires signal-cli to be installed and configured on the host.
+#
+# Installation:
+#   1. Install Java: apt install default-jre-headless
+#   2. Download signal-cli from GitHub releases
+#   3. Register a phone number OR link as secondary device
+#
+# Option A - Register new number:
+#   signal-cli --config /root/.signal-cli-alfred -u +YOURNUMBER register
+#   signal-cli --config /root/.signal-cli-alfred -u +YOURNUMBER verify CODE
+#
+# Option B - Link as secondary device (recommended):
+#   signal-cli --config /root/.signal-cli-alfred link -n "Alfred Bot"
+#   Then scan QR code with Signal app
+#
+# IMPORTANT: Use a SEPARATE config directory from other Signal bots!
+# signal-cli locks its data files - only one process can use each directory.
+signal:
+  enabled: false
+  phone_number: ""              # Alfred's Signal number (e.g., "+1234567890")
+  signal_cli_path: "signal-cli" # Path to signal-cli binary
+  data_dir: "/root/.signal-cli-alfred"  # MUST be unique per bot
+
+# ------------------------------------------------------------------------------
+# Logging
+# ------------------------------------------------------------------------------
+logging:
+  level: "INFO"         # DEBUG, INFO, WARNING, ERROR
+  file: "/var/log/alfred/gateway.log"
+
+# ------------------------------------------------------------------------------
+# Example: Minimal Telegram-only Configuration
+# ------------------------------------------------------------------------------
+# owner:
+#   telegram_id: "123456789"
+#
+# alfred:
+#   api_url: "http://alfred:50001"
+#
+# telegram:
+#   enabled: true
+#   bot_token: "123456789:ABCdefGHIjklMNOpqrsTUVwxyz"
+#
+# discord:
+#   enabled: false
+#
+# signal:
+#   enabled: false
+
+# ------------------------------------------------------------------------------
+# Example: All Platforms Enabled
+# ------------------------------------------------------------------------------
+# owner:
+#   telegram_id: "123456789"
+#   discord_id: "123456789012345678"
+#   signal_number: "+1987654321"
+#
+# alfred:
+#   api_url: "http://alfred:50001"
+#   timeout: 180
+#
+# telegram:
+#   enabled: true
+#   bot_token: "123456789:ABCdefGHIjklMNOpqrsTUVwxyz"
+#
+# discord:
+#   enabled: true
+#   bot_token: "ODk0NzIxNDY3ODkwNjE3MzQ2.YVlXXg.example"
+#
+# signal:
+#   enabled: true
+#   phone_number: "+1234567890"
+#   data_dir: "/root/.signal-cli-alfred"
