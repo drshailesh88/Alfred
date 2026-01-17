@@ -57,6 +57,7 @@ services:
       # Application Settings
       - AGENT_PROFILE=alfred
       - ALFRED_PORT=50001
+      - WEB_UI_HOST=0.0.0.0
       - TZ=${TZ:-UTC}
       - FLASK_SECRET_KEY=${FLASK_SECRET_KEY:-}
       - LOG_LEVEL=${LOG_LEVEL:-INFO}
